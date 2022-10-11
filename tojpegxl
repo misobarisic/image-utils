@@ -147,7 +147,7 @@ if [ -d "${input_path}" ]; then
 
 		if command -v parallel > /dev/null && [ "${jobs}" -ne 1 ]; then
 			# shellcheck disable=SC2089
-			cmd="cjxl -q \"${quality}\" --effort=\"${effort}\" --brotli_effort=\"${brotli_effort}\" {} ${output_path}/{/.}.jxl &>/dev/null"
+			cmd="cjxl -q \"${quality}\" --effort=\"${effort}\" --brotli_effort=\"${brotli_effort}\" {} ${output_path}/{/.}.jxl 2> /dev/null"
 
 			if [ "${jobs}" -eq 0 ]; then
 				# shellcheck disable=SC2086,SC2090
@@ -173,7 +173,7 @@ if [ -d "${input_path}" ]; then
 				count=$((count + 1))
 				ProgressBar "${count}" "${end}" "${file}"
 				filename=$(basename "${file%.*}")
-				cjxl -q "${quality}" --effort="${effort}" --brotli_effort="${brotli_effort}" "${file}" "${output_path}/${filename}.jxl" >&2 /dev/null
+				cjxl -q "${quality}" --effort="${effort}" --brotli_effort="${brotli_effort}" "${file}" "${output_path}/${filename}.jxl" 2> /dev/null
 			fi
 		done
 	else
