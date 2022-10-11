@@ -1,9 +1,7 @@
 #!/bin/sh
 
 ProgressBar() {
-	progress=$(($1 * 100 / $2 * 100))
-	progress=$((progress / 100))
-
+	progress=$(($1 * 100 / $2))
 	printf "\r${progress}%% ${1}:$((${2} - ${1})) ${3}"
 }
 
@@ -27,12 +25,11 @@ fi
 while :; do
 	case $1 in
 		-q | --quality)
-			if [ ! -n "$2" ]; then
+			if [ -z "$2" ]; then
 				printf >&2 "You must provide a value after -q/--quality\n"
 				exit 1
 			fi
-			[ -n "$2" ] && [ "$2" -eq "$2" ] 2> /dev/null
-			if [ $? -ne 0 ]; then
+			if ! eval "[ -n \"$2\" ] && [ \"$2\" -eq \"$2\" ] 2> /dev/null"; then
 				printf >&2 "%s must be a valid integer. Got %s\n" "-q/--quality" "$2"
 				exit 1
 			fi
@@ -72,12 +69,11 @@ while :; do
 			shift
 			;;
 		-j | --jobs)
-			if [ ! -n "$2" ]; then
+			if [ -z "$2" ]; then
 				printf >&2 "You must provide a value after -j/--jobs\n"
 				exit 1
 			fi
-			[ -n "$2" ] && [ "$2" -eq "$2" ] 2> /dev/null
-			if [ $? -ne 0 ]; then
+			if ! eval "[ -n \"$2\" ] && [ \"$2\" -eq \"$2\" ] 2> /dev/null"; then
 				printf >&2 "%s must be a valid integer. Got %s\n" "-j/--jobs" "$2"
 				exit 1
 			fi
@@ -106,19 +102,19 @@ if [ -f "${input_path}" ]; then
 		printf >&2 "%s must be a file, not a directory when input is a file. Got %s\n" "-o/--output" "${output_path}"
 		exit 1
 	fi
-	output_dir=$(dirname ${output_path})
-	if [ ! -e ${output_dir} ]; then
+	output_dir=$(dirname "${output_path}")
+	if [ ! -e "${output_dir}" ]; then
 		printf "Creating parent directories before writing to the output file\n"
-		mkdir -p ${output_dir}
+		mkdir -p "${output_dir}"
 	fi
 
-	convert "${input_path}" pnm:- | mozcjpeg -quality ${quality} > "${output_path}"
+	convert "${input_path}" pnm:- | mozcjpeg -quality "${quality}" > "${output_path}"
 fi
 
 if [ -d "${input_path}" ]; then
 	if [ ! -e "${output_path}" ] && [ ! -f "${output_path}" ]; then
 		printf "Creating output directories before writing to the output files\n"
-		mkdir -p ${output_path}
+		mkdir -p "${output_path}"
 	fi
 
 	if [ -d "${output_path}" ]; then
@@ -129,26 +125,26 @@ if [ -d "${input_path}" ]; then
 			if [ "${jobs}" -eq 0 ]; then
 				parallel --bar "${cmd}" ::: "${input_path}"/*"${extension}"*
 			else
-				parallel --bar --jobs ${jobs} "${cmd}" ::: "${input_path}"/*"${extension}"*
+				parallel --bar --jobs "${jobs}" "${cmd}" ::: "${input_path}"/*"${extension}"*
 			fi
 
 			exit
 		fi
 
 		end=0
-		for file in ${input_path}/*${extension}; do
+		for file in "${input_path}"/*"${extension}"; do
 			if [ -f "${file}" ]; then
 				end=$((end + 1))
 			fi
 		done
 
 		count=0
-		for file in ${input_path}/*${extension}; do
+		for file in "${input_path}"/*"${extension}"; do
 			if [ -f "${file}" ]; then
 				count=$((count + 1))
 				ProgressBar ${count} ${end} "${file}"
 				filename=$(basename "${file%.*}")
-				convert "${file}" pnm:- | mozcjpeg -quality ${quality} > "${output_path}/${filename}.jpg"
+				convert "${file}" pnm:- | mozcjpeg -quality "${quality}" > "${output_path}/${filename}.jpg"
 			fi
 		done
 	else
