@@ -136,7 +136,7 @@ if [ -d "${input_path}" ]; then
 	if [ -d "${output_path}" ]; then
 
 		if command -v parallel >/dev/null && [ "${jobs}" -ne 1 ]; then
-			cmd="cjxl -q \"${quality}\" --effort=\"${effort}\" --brotli_effort=\"${brotli_effort}\" {} \"${output_path}/{/.}.jxl\" &>/dev/null"
+			cmd="cjxl -q \"${quality}\" --effort=\"${effort}\" --brotli_effort=\"${brotli_effort}\" {} ${output_path}/{/.}.jxl &>/dev/null"
 			
 			if [ "${jobs}" -eq 0 ]; then
 				parallel --bar ${cmd} ::: "${input_path}"/*"${extension}"*
@@ -159,7 +159,7 @@ if [ -d "${input_path}" ]; then
 			if [ -f "${file}" ]; then
 				count=$((count + 1))
 				ProgressBar ${count} ${end}
-				filename=$(basename ${file%.*})
+				filename=$(basename "${file%.*}")
 				cjxl -q "${quality}" --effort="${effort}" --brotli_effort="${brotli_effort}" "${file}" "${output_path}/${filename}.jxl" &>/dev/null
 			fi
 		done
