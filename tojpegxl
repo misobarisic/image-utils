@@ -1,0 +1,171 @@
+#/bin/sh
+
+# https://stackoverflow.com/a/28044986, https://github.com/fearside/ProgressBar/
+function ProgressBar {
+	# Process data
+	let _progress=(${1} * 100 / ${2} * 100)/100
+	let _done=(_progress * 4)/10
+	let _left=40-_done
+	# Build progressbar string lengths
+	_fill=$(printf "%${_done}s")
+	_empty=$(printf "%${_left}s")
+
+	# 1.2 Build progressbar strings and print the ProgressBar line
+	# 1.2.1 Output example:
+	# 1.2.1.1 Progress : [########################################] 100%
+	printf "\rProgress: ${1}/${2} [${_fill// /#}${_empty// /-}] ${_progress}%%"
+}
+
+quality=95
+effort=7
+brotli_effort=9
+output_path=""
+input_path=""
+extension=""
+jobs=0
+
+if ! command -v cjxl >/dev/null; then
+	printf >&2 "'cjxl' not present. Make sure to install libjxl.\n"
+	exit 1
+fi
+
+# Parse arguments
+while :; do
+	case $1 in
+	-q | --quality)
+		[ -n "$2" ] && [ "$2" -eq "$2" ] 2>/dev/null
+		if [ $? -ne 0 ]; then
+			printf >&2 "%s must be a valid integer. Got %s\n" "-q/--quality" "$2"
+			exit 1
+		fi
+		[ "$2" -gt 100 ] || [ "$2" -lt 0 ] && printf >&2 "%s must be an integer between 0 and 100. Got %s\n" "-q/--quality" "$2" && exit 1
+		quality="$2"
+		shift
+		shift
+		;;
+	--ext | --extension)
+		if [ -n "$2" ]; then
+			extension=".$2"
+		fi
+		shift
+		shift
+		;;
+	-b | --brotli_effort)
+		[ -n "$2" ] && [ "$2" -eq "$2" ] 2>/dev/null
+		if [ $? -ne 0 ]; then
+			printf >&2 "%s must be a valid integer. Got %s\n" "-q/--quality" "$2"
+			exit 1
+		fi
+		[ "$2" -gt 11 ] || [ "$2" -lt 0 ] && printf >&2 "%s must be an integer between 0 and 100. Got %s\n" "-b/--brotli_effort" "$2" && exit 1
+		brotli_effort="$2"
+		shift
+		shift
+		;;
+	-e | --effort)
+		[ -n "$2" ] && [ "$2" -eq "$2" ] 2>/dev/null
+		if [ $? -ne 0 ]; then
+			printf >&2 "%s must be a valid integer. Got %s\n" "-e/--effort" "$2"
+			exit 1
+		fi
+		[ "$2" -gt 9 ] || [ "$2" -lt 1 ] && printf >&2 "%s must be an integer between 0 and 100. Got %s\n" "-e/--effort" "$2" && exit 1
+		effort="$2"
+		shift
+		shift
+		;;
+	-o | --output)
+		if [ -n "$2" ]; then
+			output_path="$2"
+		fi
+		shift
+		shift
+		;;
+	-i | --input)
+		if [ -n "$2" ]; then
+			input_path="$2"
+		fi
+		shift
+		shift
+		;;
+	-j | --jobs)
+		[ -n "$2" ] && [ "$2" -eq "$2" ] 2>/dev/null
+		if [ $? -ne 0 ]; then
+			printf >&2 "%s must be a valid integer. Got %s\n" "-j/--jobs" "$2"
+			exit 1
+		fi
+		if [ "$2" -lt 0 ]; then
+			printf >&2 "%s must be a non negative integer. Got %s\n" "-j/--jobs" "$2"
+			exit 1
+		fi
+		if [ -n "$2" ]; then
+			jobs="$2"
+		fi
+		shift
+		shift
+		;;
+	*) 
+		break
+		;;
+	esac
+done
+
+[ -z "${input_path}" ] && printf >&2 "%s must be specified\n" "-i/--input" && exit 1
+[ -z "${output_path}" ] && printf >&2 "%s must be specified\n" "-o/--output" && exit 1
+
+if [ -f "${input_path}" ]; then
+	# output_path=$(realpath -s $output_path)
+	if [ -d "${output_path}" ]; then
+		printf >&2 "%s must be a file, not a directory when input is a file. Got %s\n" "-o/--output" "${output_path}"
+		exit 1
+	fi
+	output_dir=$(dirname ${output_path})
+	if [ ! -e ${output_dir} ]; then
+		printf "Creating parent directories before writing to the output file\n"
+		mkdir -p ${output_dir}
+	fi
+
+	convert "${input_path}" pnm:- | mozcjpeg -quality ${quality} >"${output_path}"
+	cjxl "${input_path}" "${output_path}" -q "${quality}" -e "${effort}" --brotli_effort="${brotli_effort}"
+fi
+
+if [ -d "${input_path}" ]; then
+	if [ ! -e "${output_path}" ] && [ ! -f "${output_path}" ]; then
+		printf "Creating output directories before writing to the output files\n"
+		mkdir -p ${output_path}
+	fi
+
+	if [ -d "${output_path}" ]; then
+
+		if command -v parallel >/dev/null && [ "${jobs}" -ne 1 ]; then
+			cmd="cjxl -q \"${quality}\" --effort=\"${effort}\" --brotli_effort=\"${brotli_effort}\" {} \"${output_path}/{/.}.jxl\" &>/dev/null"
+			
+			if [ "${jobs}" -eq 0 ]; then
+				parallel --bar ${cmd} ::: "${input_path}"/*"${extension}"*
+			else
+				parallel --bar --jobs ${jobs} ${cmd} ::: "${input_path}"/*"${extension}"*
+			fi
+			
+			exit
+		fi
+
+		end=0
+		for file in ${input_path}/*${extension}; do
+			if [ -f "${file}" ]; then
+				end=$((end + 1))
+			fi
+		done
+
+		count=0
+		for file in ${input_path}/*${extension}; do
+			if [ -f "${file}" ]; then
+				count=$((count + 1))
+				ProgressBar ${count} ${end}
+				filename=$(basename ${file%.*})
+				cjxl -q "${quality}" --effort="${effort}" --brotli_effort="${brotli_effort}" "${file}" "${output_path}/${filename}.jxl" &>/dev/null
+			fi
+		done
+	else
+		printf >&2 "%s must be a directory, not a file when input is a directory. Got %s\n" "-o/--output" "${output_path}"
+		exit 1
+	fi
+
+fi
