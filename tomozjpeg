@@ -27,10 +27,19 @@ if ! command -v convert >/dev/null; then
 	exit 1
 fi
 
+if ! command -v mozcjpeg >/dev/null; then
+	printf >&2 "'mozcjpeg' not present. Make sure to install it.\n"
+	exit 1
+fi
+
 # Parse arguments
 while :; do
 	case $1 in
 	-q | --quality)
+		if [ ! -n "$2" ]; then
+			printf >&2 "You must provide a value after -q/--quality\n"
+			exit 1
+		fi
 		[ -n "$2" ] && [ "$2" -eq "$2" ] 2>/dev/null
 		if [ $? -ne 0 ]; then
 			printf >&2 "%s must be a valid integer. Got %s\n" "-q/--quality" "$2"
@@ -44,6 +53,9 @@ while :; do
 	--ext | --extension)
 		if [ -n "$2" ]; then
 			extension=".$2"
+		else
+			printf >&2 "You must provide a value after --ext/--extension\n"
+			exit 1
 		fi
 		shift
 		shift
@@ -51,6 +63,9 @@ while :; do
 	-o | --output)
 		if [ -n "$2" ]; then
 			output_path="$2"
+		else
+			printf >&2 "You must provide a value after -o/--output\n"
+			exit 1
 		fi
 		shift
 		shift
@@ -58,11 +73,18 @@ while :; do
 	-i | --input)
 		if [ -n "$2" ]; then
 			input_path="$2"
+		else
+			printf >&2 "You must provide a value after -i/--input\n"
+			exit 1
 		fi
 		shift
 		shift
 		;;
 	-j | --jobs)
+		if [ ! -n "$2" ]; then
+			printf >&2 "You must provide a value after -j/--jobs\n"
+			exit 1
+		fi
 		[ -n "$2" ] && [ "$2" -eq "$2" ] 2>/dev/null
 		if [ $? -ne 0 ]; then
 			printf >&2 "%s must be a valid integer. Got %s\n" "-j/--jobs" "$2"

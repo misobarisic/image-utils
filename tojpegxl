@@ -33,6 +33,10 @@ fi
 while :; do
 	case $1 in
 	-q | --quality)
+		if [ ! -n "$2" ]; then
+			printf >&2 "You must provide a value after -q/--quality\n"
+			exit 1
+		fi
 		[ -n "$2" ] && [ "$2" -eq "$2" ] 2>/dev/null
 		if [ $? -ne 0 ]; then
 			printf >&2 "%s must be a valid integer. Got %s\n" "-q/--quality" "$2"
@@ -46,11 +50,18 @@ while :; do
 	--ext | --extension)
 		if [ -n "$2" ]; then
 			extension=".$2"
+		else
+			printf >&2 "You must provide a value after --ext/--extension\n"
+			exit 1
 		fi
 		shift
 		shift
 		;;
 	-b | --brotli_effort)
+		if [ ! -n "$2" ]; then
+			printf >&2 "You must provide a value after -b/--brotli_effort\n"
+			exit 1
+		fi
 		[ -n "$2" ] && [ "$2" -eq "$2" ] 2>/dev/null
 		if [ $? -ne 0 ]; then
 			printf >&2 "%s must be a valid integer. Got %s\n" "-q/--quality" "$2"
@@ -62,6 +73,10 @@ while :; do
 		shift
 		;;
 	-e | --effort)
+		if [ ! -n "$2" ]; then
+			printf >&2 "You must provide a value after -e/--effort\n"
+			exit 1
+		fi
 		[ -n "$2" ] && [ "$2" -eq "$2" ] 2>/dev/null
 		if [ $? -ne 0 ]; then
 			printf >&2 "%s must be a valid integer. Got %s\n" "-e/--effort" "$2"
@@ -75,6 +90,9 @@ while :; do
 	-o | --output)
 		if [ -n "$2" ]; then
 			output_path="$2"
+		else
+			printf >&2 "You must provide a value after -o/--output\n"
+			exit 1
 		fi
 		shift
 		shift
@@ -82,11 +100,18 @@ while :; do
 	-i | --input)
 		if [ -n "$2" ]; then
 			input_path="$2"
+		else
+			printf >&2 "You must provide a value after -i/--input\n"
+			exit 1
 		fi
 		shift
 		shift
 		;;
 	-j | --jobs)
+		if [ ! -n "$2" ]; then
+			printf >&2 "You must provide a value after -j/--jobs\n"
+			exit 1
+		fi
 		[ -n "$2" ] && [ "$2" -eq "$2" ] 2>/dev/null
 		if [ $? -ne 0 ]; then
 			printf >&2 "%s must be a valid integer. Got %s\n" "-j/--jobs" "$2"
