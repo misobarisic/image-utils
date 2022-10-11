@@ -1,4 +1,4 @@
-#/bin/sh
+#!/bin/sh
 
 # https://stackoverflow.com/a/28044986, https://github.com/fearside/ProgressBar/
 function ProgressBar {
