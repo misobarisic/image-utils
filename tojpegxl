@@ -171,7 +171,7 @@ if [ -d "${input_path}" ]; then
 		for file in "${input_path}"/*"${extension}"; do
 			if [ -f "${file}" ]; then
 				count=$((count + 1))
-				ProgressBar ${count} ${end} "${file}"
+				ProgressBar "${count}" "${end}" "${file}"
 				filename=$(basename "${file%.*}")
 				cjxl -q "${quality}" --effort="${effort}" --brotli_effort="${brotli_effort}" "${file}" "${output_path}/${filename}.jxl" >&2 /dev/null
 			fi
