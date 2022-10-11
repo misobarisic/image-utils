@@ -1,12 +1,10 @@
 #!/bin/sh
 
-function ProgressBar {
-	# Process data
+ProgressBar() {
 	progress=$(($1 * 100 / $2 * 100))
-	progress=$((${progress}/100))
-	done=(${progress} * 4)/10
+	progress=$((progress / 100))
 
-	printf "\r${progress}%% ${1}:$((${2}-${1})) ${3}"
+	printf "\r${progress}%% ${1}:$((${2} - ${1})) ${3}"
 }
 
 quality=95
@@ -17,7 +15,7 @@ input_path=""
 extension=""
 jobs=0
 
-if ! command -v cjxl >/dev/null; then
+if ! command -v cjxl > /dev/null; then
 	printf >&2 "'cjxl' not present. Make sure to install libjxl.\n"
 	exit 1
 fi
@@ -25,104 +23,104 @@ fi
 # Parse arguments
 while :; do
 	case $1 in
-	-q | --quality)
-		if [ ! -n "$2" ]; then
-			printf >&2 "You must provide a value after -q/--quality\n"
-			exit 1
-		fi
-		[ -n "$2" ] && [ "$2" -eq "$2" ] 2>/dev/null
-		if [ $? -ne 0 ]; then
-			printf >&2 "%s must be a valid integer. Got %s\n" "-q/--quality" "$2"
-			exit 1
-		fi
-		[ "$2" -gt 100 ] || [ "$2" -lt 0 ] && printf >&2 "%s must be an integer between 0 and 100. Got %s\n" "-q/--quality" "$2" && exit 1
-		quality="$2"
-		shift
-		shift
-		;;
-	--ext | --extension)
-		if [ -n "$2" ]; then
-			extension=".$2"
-		else
-			printf >&2 "You must provide a value after --ext/--extension\n"
-			exit 1
-		fi
-		shift
-		shift
-		;;
-	-b | --brotli_effort)
-		if [ ! -n "$2" ]; then
-			printf >&2 "You must provide a value after -b/--brotli_effort\n"
-			exit 1
-		fi
-		[ -n "$2" ] && [ "$2" -eq "$2" ] 2>/dev/null
-		if [ $? -ne 0 ]; then
-			printf >&2 "%s must be a valid integer. Got %s\n" "-q/--quality" "$2"
-			exit 1
-		fi
-		[ "$2" -gt 11 ] || [ "$2" -lt 0 ] && printf >&2 "%s must be an integer between 0 and 100. Got %s\n" "-b/--brotli_effort" "$2" && exit 1
-		brotli_effort="$2"
-		shift
-		shift
-		;;
-	-e | --effort)
-		if [ ! -n "$2" ]; then
-			printf >&2 "You must provide a value after -e/--effort\n"
-			exit 1
-		fi
-		[ -n "$2" ] && [ "$2" -eq "$2" ] 2>/dev/null
-		if [ $? -ne 0 ]; then
-			printf >&2 "%s must be a valid integer. Got %s\n" "-e/--effort" "$2"
-			exit 1
-		fi
-		[ "$2" -gt 9 ] || [ "$2" -lt 1 ] && printf >&2 "%s must be an integer between 0 and 100. Got %s\n" "-e/--effort" "$2" && exit 1
-		effort="$2"
-		shift
-		shift
-		;;
-	-o | --output)
-		if [ -n "$2" ]; then
-			output_path="$2"
-		else
-			printf >&2 "You must provide a value after -o/--output\n"
-			exit 1
-		fi
-		shift
-		shift
-		;;
-	-i | --input)
-		if [ -n "$2" ]; then
-			input_path="$2"
-		else
-			printf >&2 "You must provide a value after -i/--input\n"
-			exit 1
-		fi
-		shift
-		shift
-		;;
-	-j | --jobs)
-		if [ ! -n "$2" ]; then
-			printf >&2 "You must provide a value after -j/--jobs\n"
-			exit 1
-		fi
-		[ -n "$2" ] && [ "$2" -eq "$2" ] 2>/dev/null
-		if [ $? -ne 0 ]; then
-			printf >&2 "%s must be a valid integer. Got %s\n" "-j/--jobs" "$2"
-			exit 1
-		fi
-		if [ "$2" -lt 0 ]; then
-			printf >&2 "%s must be a non negative integer. Got %s\n" "-j/--jobs" "$2"
-			exit 1
-		fi
-		if [ -n "$2" ]; then
-			jobs="$2"
-		fi
-		shift
-		shift
-		;;
-	*) 
-		break
-		;;
+		-q | --quality)
+			if [ ! -n "$2" ]; then
+				printf >&2 "You must provide a value after -q/--quality\n"
+				exit 1
+			fi
+			[ -n "$2" ] && [ "$2" -eq "$2" ] 2> /dev/null
+			if [ $? -ne 0 ]; then
+				printf >&2 "%s must be a valid integer. Got %s\n" "-q/--quality" "$2"
+				exit 1
+			fi
+			[ "$2" -gt 100 ] || [ "$2" -lt 0 ] && printf >&2 "%s must be an integer between 0 and 100. Got %s\n" "-q/--quality" "$2" && exit 1
+			quality="$2"
+			shift
+			shift
+			;;
+		--ext | --extension)
+			if [ -n "$2" ]; then
+				extension=".$2"
+			else
+				printf >&2 "You must provide a value after --ext/--extension\n"
+				exit 1
+			fi
+			shift
+			shift
+			;;
+		-b | --brotli_effort)
+			if [ ! -n "$2" ]; then
+				printf >&2 "You must provide a value after -b/--brotli_effort\n"
+				exit 1
+			fi
+			[ -n "$2" ] && [ "$2" -eq "$2" ] 2> /dev/null
+			if [ $? -ne 0 ]; then
+				printf >&2 "%s must be a valid integer. Got %s\n" "-q/--quality" "$2"
+				exit 1
+			fi
+			[ "$2" -gt 11 ] || [ "$2" -lt 0 ] && printf >&2 "%s must be an integer between 0 and 100. Got %s\n" "-b/--brotli_effort" "$2" && exit 1
+			brotli_effort="$2"
+			shift
+			shift
+			;;
+		-e | --effort)
+			if [ ! -n "$2" ]; then
+				printf >&2 "You must provide a value after -e/--effort\n"
+				exit 1
+			fi
+			[ -n "$2" ] && [ "$2" -eq "$2" ] 2> /dev/null
+			if [ $? -ne 0 ]; then
+				printf >&2 "%s must be a valid integer. Got %s\n" "-e/--effort" "$2"
+				exit 1
+			fi
+			[ "$2" -gt 9 ] || [ "$2" -lt 1 ] && printf >&2 "%s must be an integer between 0 and 100. Got %s\n" "-e/--effort" "$2" && exit 1
+			effort="$2"
+			shift
+			shift
+			;;
+		-o | --output)
+			if [ -n "$2" ]; then
+				output_path="$2"
+			else
+				printf >&2 "You must provide a value after -o/--output\n"
+				exit 1
+			fi
+			shift
+			shift
+			;;
+		-i | --input)
+			if [ -n "$2" ]; then
+				input_path="$2"
+			else
+				printf >&2 "You must provide a value after -i/--input\n"
+				exit 1
+			fi
+			shift
+			shift
+			;;
+		-j | --jobs)
+			if [ ! -n "$2" ]; then
+				printf >&2 "You must provide a value after -j/--jobs\n"
+				exit 1
+			fi
+			[ -n "$2" ] && [ "$2" -eq "$2" ] 2> /dev/null
+			if [ $? -ne 0 ]; then
+				printf >&2 "%s must be a valid integer. Got %s\n" "-j/--jobs" "$2"
+				exit 1
+			fi
+			if [ "$2" -lt 0 ]; then
+				printf >&2 "%s must be a non negative integer. Got %s\n" "-j/--jobs" "$2"
+				exit 1
+			fi
+			if [ -n "$2" ]; then
+				jobs="$2"
+			fi
+			shift
+			shift
+			;;
+		*)
+			break
+			;;
 	esac
 done
 
@@ -141,7 +139,7 @@ if [ -f "${input_path}" ]; then
 		mkdir -p ${output_dir}
 	fi
 
-	convert "${input_path}" pnm:- | mozcjpeg -quality ${quality} >"${output_path}"
+	convert "${input_path}" pnm:- | mozcjpeg -quality ${quality} > "${output_path}"
 	cjxl "${input_path}" "${output_path}" -q "${quality}" -e "${effort}" --brotli_effort="${brotli_effort}"
 fi
 
@@ -153,15 +151,15 @@ if [ -d "${input_path}" ]; then
 
 	if [ -d "${output_path}" ]; then
 
-		if command -v parallel >/dev/null && [ "${jobs}" -ne 1 ]; then
+		if command -v parallel > /dev/null && [ "${jobs}" -ne 1 ]; then
 			cmd="cjxl -q \"${quality}\" --effort=\"${effort}\" --brotli_effort=\"${brotli_effort}\" {} ${output_path}/{/.}.jxl &>/dev/null"
-			
+
 			if [ "${jobs}" -eq 0 ]; then
 				parallel --bar ${cmd} ::: "${input_path}"/*"${extension}"*
 			else
 				parallel --bar --jobs ${jobs} ${cmd} ::: "${input_path}"/*"${extension}"*
 			fi
-			
+
 			exit
 		fi
 
@@ -178,7 +176,8 @@ if [ -d "${input_path}" ]; then
 				count=$((count + 1))
 				ProgressBar ${count} ${end} "${file}"
 				filename=$(basename "${file%.*}")
-				cjxl -q "${quality}" --effort="${effort}" --brotli_effort="${brotli_effort}" "${file}" "${output_path}/${filename}.jxl" &>/dev/null
+				cjxl -q "${quality}" --effort="${effort}" --brotli_effort="${brotli_effort}" "${file}" "${output_path}/${filename}.jxl" &
+				> /dev/null
 			fi
 		done
 	else
