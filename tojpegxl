@@ -68,7 +68,7 @@ while :; do
 				printf >&2 "%s must be a valid integer. Got %s\n" "-e/--effort" "$2"
 				exit 1
 			fi
-			[ "$2" -gt 9 ] || [ "$2" -lt 1 ] && printf >&2 "%s must be an integer between 0 and 100. Got %s\n" "-e/--effort" "$2" && exit 1
+			[ "$2" -gt 100 ] || [ "$2" -lt 1 ] && printf >&2 "%s must be an integer between 0 and 9. Got %s\n" "-e/--effort" "$2" && exit 1
 			effort="$2"
 			shift
 			shift
@@ -147,7 +147,7 @@ if [ -d "${input_path}" ]; then
 
 		if command -v parallel > /dev/null && [ "${jobs}" -ne 1 ]; then
 			# shellcheck disable=SC2089
-			cmd="cjxl -q \"${quality}\" --effort=\"${effort}\" --brotli_effort=\"${brotli_effort}\" {} ${output_path}/{/.}.jxl 2> /dev/null"
+			cmd="cjxl -q \"${quality}\" --effort=\"${effort}\" --brotli_effort=\"${brotli_effort}\" {} ${output_path}/{/.}.jxl &>/dev/null"
 
 			if [ "${jobs}" -eq 0 ]; then
 				# shellcheck disable=SC2086,SC2090
@@ -171,9 +171,9 @@ if [ -d "${input_path}" ]; then
 		for file in "${input_path}"/*"${extension}"; do
 			if [ -f "${file}" ]; then
 				count=$((count + 1))
-				ProgressBar "${count}" "${end}" "${file}"
+				ProgressBar ${count} ${end} "${file}"
 				filename=$(basename "${file%.*}")
-				cjxl -q "${quality}" --effort="${effort}" --brotli_effort="${brotli_effort}" "${file}" "${output_path}/${filename}.jxl" 2> /dev/null
+				cjxl -q "${quality}" --effort="${effort}" --brotli_effort="${brotli_effort}" "${file}" "${output_path}/${filename}.jxl" >&2 /dev/null
 			fi
 		done
 	else
